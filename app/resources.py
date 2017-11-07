@@ -20,7 +20,7 @@ class UserResource(ModelResource):
 class PostResource(ModelResource):
 
     poster = fields.ToOneField(UserResource, 'poster')
-    school = fields.ToOneField('app.resources.SchoolResource', 'post')
+    school = fields.ToOneField('app.resources.SchoolResource', 'school')
     comments = fields.ToManyField('app.resources.CommentResource', 'comment_set', related_name='post')
 
     class Meta:
