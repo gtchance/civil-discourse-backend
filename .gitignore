@@ -122,3 +122,9 @@ tests/report/
 .static_storage/
 .media/
 local_settings.py
+
+#heroku
+venv
+*.pyc
+staticfiles
+.env
