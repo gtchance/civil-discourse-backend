@@ -7,6 +7,9 @@ from app.models import Post, School, Comment
 
 
 class UserResource(ModelResource):
+
+    posts = fields.ToManyField('app.resources.PostResource', 'post_set', related_name='poster')
+
     class Meta:
         queryset = User.objects.all()
         resource_name = 'auth/user'
@@ -16,7 +19,7 @@ class UserResource(ModelResource):
 
 class PostResource(ModelResource):
 
-    poster = fields.ToOneField(UserResource, 'post')
+    poster = fields.ToOneField(UserResource, 'poster')
     school = fields.ToOneField('app.resources.SchoolResource', 'post')
     comments = fields.ToManyField('app.resources.CommentResource', 'comment_set', related_name='post')
 
