@@ -25,7 +25,7 @@ SECRET_KEY = 'v&03uzf=am4cxs-vuxyst-!at(ijs3p#kxf6q#c+erv7d$(g4h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['civil-discourse.herokuapp.com']
 
 
 # Application definition
