@@ -5,9 +5,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Post
-from .models import Comment
-from .models import School
+from .models import Post, Comment, School
 
 admin.site.register(Post)
 admin.site.register(School)
