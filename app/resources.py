@@ -1,10 +1,11 @@
 from tastypie import utils, fields
-from tastypie.resources import ModelResource
+from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from django.contrib.auth.models import User
 from tastypie.authorization import DjangoAuthorization, Authorization
 from tastypie.authentication import ApiKeyAuthentication, BasicAuthentication
 from app.models import Post, School, Comment
 
+#TODO: limit interation based on authed user's school
 
 class UserResource(ModelResource):
 
@@ -14,6 +15,11 @@ class UserResource(ModelResource):
         queryset = User.objects.all()
         resource_name = 'auth/user'
         excludes = ['email', 'password', 'is_superuser']
+        allowed_methods = ['get']
+        filtering = {
+            'school': ALL_WITH_RELATIONS,
+            'date': ALL
+        }
         authentication = BasicAuthentication()
 
 
@@ -28,6 +34,12 @@ class PostResource(ModelResource):
         resource_name = 'post'
         excludes = []
         allowed_methods = ['get']
+        filtering = {
+            'school': ALL_WITH_RELATIONS,
+            'date': ALL
+        }
+        ordering = ['date']
+
         # FIXME: Don't allow all access!
         authorization = Authorization()
 
@@ -54,5 +66,10 @@ class CommentResource(ModelResource):
         resource_name = 'comment'
         excludes = []
         allowed_methods = ['get']
+        filtering = {
+            'post': ALL_WITH_RELATIONS,
+            'date': ALL
+        }
+        ordering = ['date']
         # FIXME: Don't allow all access!
         authorization = Authorization()
