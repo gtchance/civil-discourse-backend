@@ -2,7 +2,9 @@ from tastypie import utils, fields
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from django.contrib.auth.models import User
 from tastypie.authorization import DjangoAuthorization, Authorization
-from tastypie.authentication import ApiKeyAuthentication, BasicAuthentication
+from tastypie.authentication import ApiKeyAuthentication, BasicAuthentication, Authentication
+from django.db import IntegrityError
+from tastypie.exceptions import BadRequest
 from app.models import Post, School, Comment
 
 #TODO: limit interation based on authed user's school
@@ -22,6 +24,26 @@ class UserResource(ModelResource):
         }
         authentication = BasicAuthentication()
 
+
+class UserSignUpResource(ModelResource):
+    class Meta:
+        object_class = User
+        resource_name = 'auth/register'
+        fields = ['username', 'first_name', 'last_name', 'email']
+        allowed_methods = ['post']
+        include_resource_uri = False
+        authentication = Authentication()
+        authorization = Authorization()
+        queryset = User.objects.all()
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        try:
+            bundle = super(UserSignUpResource, self).obj_create(bundle, request=request, **kwargs)
+            bundle.obj.set_password(bundle.data.get('password'))
+            bundle.obj.save()
+        except IntegrityError:
+            raise BadRequest('That username already exists')
+        return bundle
 
 class PostResource(ModelResource):
 

@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from app.resources import PostResource, UserResource, SchoolResource, CommentResource
+from app.resources import PostResource, UserResource, SchoolResource, CommentResource, UserSignUpResource
 from tastypie.api import Api
 
 v1_api = Api(api_name='v1')
 v1_api.register(PostResource())
 v1_api.register(UserResource())
+v1_api.register(UserSignUpResource())
 v1_api.register(SchoolResource())
 v1_api.register(CommentResource())
 
