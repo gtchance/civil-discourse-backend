@@ -1,28 +1,67 @@
 from tastypie import utils, fields
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from django.contrib.auth.models import User
+from tastypie.http import HttpUnauthorized, HttpForbidden
+from django.contrib.auth import authenticate, login, logout
 from tastypie.authorization import DjangoAuthorization, Authorization
 from tastypie.authentication import ApiKeyAuthentication, BasicAuthentication, Authentication
 from django.db import IntegrityError
 from tastypie.exceptions import BadRequest
+from tastypie.utils import trailing_slash
+from django.conf.urls import url
 from app.models import Post, School, Comment
+from tastypie.models import ApiKey
 
-#TODO: limit interation based on authed user's school
+
+# TODO: limit interation based on authed user's school
+
+def createAPIKey(user):
+    return ApiKey.objects.get_or_create(user=user)[0].key
+
 
 class UserResource(ModelResource):
-
     posts = fields.ToManyField('app.resources.PostResource', 'post_set', related_name='poster')
 
     class Meta:
         queryset = User.objects.all()
         resource_name = 'auth/user'
         excludes = ['email', 'password', 'is_superuser']
-        allowed_methods = ['get']
+        allowed_methods = ['get', 'post']
         filtering = {
             'school': ALL_WITH_RELATIONS,
             'date': ALL
         }
-        authentication = BasicAuthentication()
+        authentication = ApiKeyAuthentication()
+
+    def override_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)/login%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('login'), name="api_login")
+        ]
+
+    def login(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+
+        data = self.deserialize(request, request.body,
+                                format=request.META.get('CONTENT_TYPE', 'application/json'))
+
+        username = data.get('username', '')
+        password = data.get('password', '')
+
+        user = authenticate(username=username, password=password)
+        if user:
+            token = createAPIKey(user)
+            return self.create_response(request, {
+                'success': True,
+                'user': user,
+                'token': token
+            })
+        else:
+            return self.create_response(request, {
+                'success': False,
+                'error': 'Unable to authenticate with provided credentials.',
+            }, HttpUnauthorized)
 
 
 class UserSignUpResource(ModelResource):
@@ -45,8 +84,8 @@ class UserSignUpResource(ModelResource):
             raise BadRequest('That username already exists')
         return bundle
 
-class PostResource(ModelResource):
 
+class PostResource(ModelResource):
     poster = fields.ToOneField(UserResource, 'poster')
     school = fields.ToOneField('app.resources.SchoolResource', 'school')
     comments = fields.ToManyField('app.resources.CommentResource', 'comment_set', related_name='post')
@@ -64,10 +103,10 @@ class PostResource(ModelResource):
 
         # FIXME: Don't allow all access!
         authorization = Authorization()
+        authentication = ApiKeyAuthentication()
 
 
 class SchoolResource(ModelResource):
-
     posts = fields.ToManyField(PostResource, 'post_set', related_name='school')
 
     class Meta:
@@ -77,10 +116,10 @@ class SchoolResource(ModelResource):
         allowed_methods = ['get']
         # FIXME: Don't allow all access!
         authorization = Authorization()
+        authentication = ApiKeyAuthentication()
 
 
 class CommentResource(ModelResource):
-
     post = fields.ToOneField(PostResource, 'post')
 
     class Meta:
@@ -95,3 +134,4 @@ class CommentResource(ModelResource):
         ordering = ['date']
         # FIXME: Don't allow all access!
         authorization = Authorization()
+        authentication = ApiKeyAuthentication()
