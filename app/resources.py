@@ -63,7 +63,8 @@ class UserResource(ModelResource):
                 'last_name': user.last_name,
                 'email': user.email,
                 'token': token,
-                'school': school
+                'school': school,
+                'id': user.id
             })
         else:
             return self.create_response(request, {
