@@ -118,7 +118,7 @@ class PostResource(ModelResource):
         queryset = Post.objects.all()
         resource_name = 'post'
         excludes = []
-        allowed_methods = ['get']
+        allowed_methods = ['get', 'post']
         filtering = {
             'school': ALL_WITH_RELATIONS,
             'date': ALL
