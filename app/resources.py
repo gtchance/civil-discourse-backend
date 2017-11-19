@@ -56,10 +56,12 @@ class UserResource(ModelResource):
         if user:
             token = createAPIKey(user)
             school_domain = email.split('@')[1]
-            school = School.objects.filter(email_domain=school_domain)
+            school = list(School.objects.filter(email_domain=school_domain))[0].id
             return self.create_response(request, {
                 'error': False,
-                'user': user,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
                 'token': token,
                 'school': school
             })
