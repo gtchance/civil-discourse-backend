@@ -26,12 +26,13 @@ class UserResource(ModelResource):
         queryset = User.objects.all()
         resource_name = 'auth/user'
         excludes = ['email', 'password', 'is_superuser']
-        allowed_methods = ['get', 'post']
+        allowed_methods = ['post']
         filtering = {
             'school': ALL_WITH_RELATIONS,
             'date': ALL
         }
-        authentication = ApiKeyAuthentication()
+        authentication = Authentication()
+        authorization = Authorization()
 
     def override_urls(self):
         return [
@@ -46,21 +47,26 @@ class UserResource(ModelResource):
         data = self.deserialize(request, request.body,
                                 format=request.META.get('CONTENT_TYPE', 'application/json'))
 
-        username = data.get('username', '')
+        # username is the same as email
+        email = data.get('username', '')
         password = data.get('password', '')
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(username=email, password=password)
+
         if user:
             token = createAPIKey(user)
+            school_domain = email.split('@')[1]
+            school = School.objects.all(email_domain=school_domain)
             return self.create_response(request, {
-                'success': True,
+                'error': False,
                 'user': user,
-                'token': token
+                'token': token,
+                'school': school
             })
         else:
             return self.create_response(request, {
-                'success': False,
-                'error': 'Unable to authenticate with provided credentials.',
+                'error': True,
+                'message': 'Unable to authenticate with provided credentials.',
             }, HttpUnauthorized)
 
 
@@ -76,12 +82,28 @@ class UserSignUpResource(ModelResource):
         queryset = User.objects.all()
 
     def obj_create(self, bundle, request=None, **kwargs):
+        email = bundle.data.get('email')
+        split_email = email.split('@')
+        if len(split_email) < 2:
+            raise BadRequest('Email must be a valid school email address.')
+
+        school_domain = split_email[1]
+        school_exists = False
+        for school in School.objects.all():
+            if school.email_domain == school_domain:
+                school_exists = True
+                break
+
+        if not school_exists:
+            raise BadRequest('This school is not registered in the database.')
+
         try:
+            bundle.data['username'] = email
             bundle = super(UserSignUpResource, self).obj_create(bundle, request=request, **kwargs)
             bundle.obj.set_password(bundle.data.get('password'))
             bundle.obj.save()
         except IntegrityError:
-            raise BadRequest('That username already exists')
+            raise BadRequest('That username or email already exists')
         return bundle
 
 
