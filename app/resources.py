@@ -13,8 +13,6 @@ from app.models import Post, School, Comment
 from tastypie.models import ApiKey
 
 
-# TODO: limit interation based on authed user's school
-
 def createAPIKey(user):
     return ApiKey.objects.get_or_create(user=user)[0].key
 
@@ -146,6 +144,7 @@ class SchoolResource(ModelResource):
 
 class CommentResource(ModelResource):
     post = fields.ToOneField(PostResource, 'post')
+    commenter = fields.ToOneField(UserResource, 'commenter', full=True)
 
     class Meta:
         queryset = Comment.objects.all()
