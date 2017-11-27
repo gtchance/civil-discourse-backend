@@ -150,7 +150,7 @@ class CommentResource(ModelResource):
         queryset = Comment.objects.all()
         resource_name = 'comment'
         excludes = []
-        allowed_methods = ['get']
+        allowed_methods = ['get', 'post']
         filtering = {
             'post': ALL_WITH_RELATIONS,
             'date': ALL
