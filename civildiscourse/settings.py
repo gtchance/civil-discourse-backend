@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['civil-discourse.herokuapp.com', 'localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'haystack',
     'tastypie',
     'app.apps.AppConfig',
     'django.contrib.admin',
@@ -120,3 +121,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.simple_backend.SimpleEngine',
+    },
+}
