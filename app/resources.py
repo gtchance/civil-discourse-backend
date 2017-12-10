@@ -104,8 +104,6 @@ class UserSignUpResource(ModelResource):
             bundle.data['username'] = email
             bundle = super(UserSignUpResource, self).obj_create(bundle, request=request, **kwargs)
             password = bundle.data.get('password')
-            if len(password) < 6:
-                raise BadRequest('Password must be at least 6 characters.')
             bundle.obj.set_password(password)
             bundle.obj.save()
         except IntegrityError:
