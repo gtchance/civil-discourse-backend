@@ -33,7 +33,7 @@ class UserResource(ModelResource):
         authentication = Authentication()
         authorization = Authorization()
 
-    def override_urls(self):
+    def prepend_urls(self):
         return [
             url(r"^(?P<resource_name>%s)/login%s$" %
                 (self._meta.resource_name, trailing_slash()),
@@ -89,6 +89,11 @@ class UserSignUpResource(ModelResource):
         if len(split_email) < 2:
             raise BadRequest('Email must be a valid school email address.')
 
+        password = bundle.data.get('password')
+        if len(password) < 6:
+            raise BadRequest('Password must be at least 6 characters.')
+
+
         school_domain = split_email[1]
         school_exists = False
         for school in School.objects.all():
@@ -102,7 +107,7 @@ class UserSignUpResource(ModelResource):
         try:
             bundle.data['username'] = email
             bundle = super(UserSignUpResource, self).obj_create(bundle, request=request, **kwargs)
-            bundle.obj.set_password(bundle.data.get('password'))
+            bundle.obj.set_password(password)
             bundle.obj.save()
         except IntegrityError:
             raise BadRequest('That username or email already exists')
