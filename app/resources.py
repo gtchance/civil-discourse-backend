@@ -89,10 +89,6 @@ class UserSignUpResource(ModelResource):
         if len(split_email) < 2:
             raise BadRequest('Email must be a valid school email address.')
 
-        password = bundle.data.get('password')
-        if len(password) < 6:
-            raise BadRequest('Password must be at least 6 characters.')
-
 
         school_domain = split_email[1]
         school_exists = False
@@ -107,6 +103,9 @@ class UserSignUpResource(ModelResource):
         try:
             bundle.data['username'] = email
             bundle = super(UserSignUpResource, self).obj_create(bundle, request=request, **kwargs)
+            password = bundle.data.get('password')
+            if len(password) < 6:
+                raise BadRequest('Password must be at least 6 characters.')
             bundle.obj.set_password(password)
             bundle.obj.save()
         except IntegrityError:
