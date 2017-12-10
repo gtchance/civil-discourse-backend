@@ -123,7 +123,7 @@ class PostResource(ModelResource):
         queryset = Post.objects.all()
         resource_name = 'post'
         excludes = []
-        allowed_methods = ['get', 'post']
+        allowed_methods = ['get', 'post', 'delete']
         filtering = {
             'school': ALL_WITH_RELATIONS,
             'date': ALL
@@ -181,7 +181,7 @@ class CommentResource(ModelResource):
         queryset = Comment.objects.all()
         resource_name = 'comment'
         excludes = []
-        allowed_methods = ['get', 'post']
+        allowed_methods = ['get', 'post', 'delete']
         filtering = {
             'post': ALL_WITH_RELATIONS,
             'date': ALL
