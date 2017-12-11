@@ -115,7 +115,7 @@ class UserSignUpResource(ModelResource):
 
 
 class PostResource(ModelResource):
-    poster = fields.ToOneField(UserResource, 'poster')
+    poster = fields.ToOneField(UserResource, 'poster', full=True)
     school = fields.ToOneField('app.resources.SchoolResource', 'school')
     comments = fields.ToManyField('app.resources.CommentResource', 'comment_set', related_name='post')
 
