@@ -130,9 +130,9 @@ class PostResource(ModelResource):
         }
         ordering = ['date']
 
-        # FIXME: Don't allow all access!
         authorization = Authorization()
         authentication = ApiKeyAuthentication()
+
 
     def prepend_urls(self):
         return [
@@ -168,7 +168,6 @@ class SchoolResource(ModelResource):
         resource_name = 'school'
         excludes = []
         allowed_methods = ['get']
-        # FIXME: Don't allow all access!
         authorization = Authorization()
         authentication = ApiKeyAuthentication()
 
@@ -187,6 +186,5 @@ class CommentResource(ModelResource):
             'date': ALL
         }
         ordering = ['date']
-        # FIXME: Don't allow all access!
         authorization = Authorization()
         authentication = ApiKeyAuthentication()
