@@ -15,10 +15,22 @@ from haystack.query import SearchQuerySet
 
 
 def createAPIKey(user):
+    """
+
+    :param user: The user to create a key for
+    :type user: User model
+    :return: The generated key
+    :rtype: String
+    """
     return ApiKey.objects.get_or_create(user=user)[0].key
 
 
 class UserResource(ModelResource):
+    """
+    This class models a resource for the user model, including authentication
+    """
+
+    # The posts relating to the the user
     posts = fields.ToManyField('app.resources.PostResource', 'post_set', related_name='poster')
 
     class Meta:
@@ -41,6 +53,10 @@ class UserResource(ModelResource):
         ]
 
     def login(self, request, **kwargs):
+        """
+        Handles log in requests
+        """
+
         self.method_check(request, allowed=['post'])
 
         data = self.deserialize(request, request.body,
@@ -56,6 +72,8 @@ class UserResource(ModelResource):
             token = createAPIKey(user)
             school_domain = email.split('@')[1]
             school = list(School.objects.filter(email_domain=school_domain))[0].id
+
+            # create the response json
             return self.create_response(request, {
                 'error': False,
                 'first_name': user.first_name,
@@ -73,6 +91,10 @@ class UserResource(ModelResource):
 
 
 class UserSignUpResource(ModelResource):
+    """
+    This class models a resource for the user model, but only relating to account creation
+    """
+
     class Meta:
         object_class = User
         resource_name = 'auth/register'
@@ -115,8 +137,17 @@ class UserSignUpResource(ModelResource):
 
 
 class PostResource(ModelResource):
+    """
+    This class models a resource for the post model
+    """
+
+    # The creator of the post
     poster = fields.ToOneField(UserResource, 'poster', full=True)
+
+    # The school the post belongs to
     school = fields.ToOneField('app.resources.SchoolResource', 'school')
+
+    # The comments belonging to the post
     comments = fields.ToManyField('app.resources.CommentResource', 'comment_set', related_name='post')
 
     class Meta:
@@ -161,6 +192,11 @@ class PostResource(ModelResource):
 
 
 class SchoolResource(ModelResource):
+    """
+    This class models a resource for the school model
+    """
+
+    # Posts belonging to the school
     posts = fields.ToManyField(PostResource, 'post_set', related_name='school')
 
     class Meta:
@@ -173,7 +209,14 @@ class SchoolResource(ModelResource):
 
 
 class CommentResource(ModelResource):
+    """
+    This class models a resource for the comment model
+    """
+
+    # posts relating to the comment
     post = fields.ToOneField(PostResource, 'post')
+
+    # The creator of the comment
     commenter = fields.ToOneField(UserResource, 'commenter', full=True)
 
     class Meta:
