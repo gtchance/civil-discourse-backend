@@ -1,17 +1,16 @@
-from tastypie import utils, fields
+from tastypie import fields
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from django.contrib.auth.models import User
-from tastypie.http import HttpUnauthorized, HttpForbidden
-from django.contrib.auth import authenticate, login, logout
-from tastypie.authorization import DjangoAuthorization, Authorization
-from tastypie.authentication import ApiKeyAuthentication, BasicAuthentication, Authentication
+from tastypie.http import HttpUnauthorized
+from django.contrib.auth import authenticate
+from tastypie.authorization import Authorization
+from tastypie.authentication import ApiKeyAuthentication, Authentication
 from django.db import IntegrityError
 from tastypie.exceptions import BadRequest
 from tastypie.utils import trailing_slash
 from django.conf.urls import url
 from app.models import Post, School, Comment
 from tastypie.models import ApiKey
-from haystack.query import SearchQuerySet
 
 
 def createAPIKey(user):
@@ -164,31 +163,11 @@ class PostResource(ModelResource):
         authorization = Authorization()
         authentication = ApiKeyAuthentication()
 
-
     def prepend_urls(self):
         return [
             url(r"^(?P<resource_name>%s)/search%s$" % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('get_search'), name="api_get_search"),
         ]
-
-    def get_search(self, request, **kwargs):
-        self.method_check(request, allowed=['get'])
-        self.is_authenticated(request)
-        self.throttle_check(request)
-
-        sqs = SearchQuerySet().models(Post).load_all().auto_query(request.GET.get('q', ''))
-        paginator = self._meta.paginator_class(request.GET, sqs,
-                                               resource_uri=self.get_resource_uri(), limit=self._meta.limit,
-                                               max_limit=self._meta.max_limit,
-                                               collection_name=self._meta.collection_name)
-
-        to_be_serialized = paginator.page()
-
-        bundles = [self.build_bundle(obj=result.object, request=request) for result in to_be_serialized['objects']]
-        to_be_serialized['objects'] = [self.full_dehydrate(bundle) for bundle in bundles]
-        to_be_serialized = self.alter_list_data_to_serialize(request, to_be_serialized)
-        return self.create_response(request, to_be_serialized)
-
 
 
 class SchoolResource(ModelResource):

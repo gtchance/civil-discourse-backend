@@ -22,7 +22,6 @@ class School(models.Model):
         return self.name
 
 
-
 class Post(models.Model):
     """
     This class models a post object
@@ -42,7 +41,6 @@ class Post(models.Model):
 
     # The school the post belongs to
     school = models.ForeignKey(School)
-
 
     def __str__(self):
         """
@@ -67,7 +65,6 @@ class Comment(models.Model):
 
     # The date the comment was published
     pub_date = models.DateTimeField('date published')
-
 
     def __str__(self):
         """
